@@ -1,3 +1,67 @@
+'use strict';
+
+function ownKeys(object, enumerableOnly) {
+  var keys = Object.keys(object);
+  if (Object.getOwnPropertySymbols) {
+    var symbols = Object.getOwnPropertySymbols(object);
+    enumerableOnly &&
+      (symbols = symbols.filter(function (sym) {
+        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+      })),
+      keys.push.apply(keys, symbols);
+  }
+  return keys;
+}
+function _objectSpread(target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = null != arguments[i] ? arguments[i] : {};
+    i % 2
+      ? ownKeys(Object(source), !0).forEach(function (key) {
+          _defineProperty(target, key, source[key]);
+        })
+      : Object.getOwnPropertyDescriptors
+      ? Object.defineProperties(
+          target,
+          Object.getOwnPropertyDescriptors(source)
+        )
+      : ownKeys(Object(source)).forEach(function (key) {
+          Object.defineProperty(
+            target,
+            key,
+            Object.getOwnPropertyDescriptor(source, key)
+          );
+        });
+  }
+  return target;
+}
+function _defineProperty(obj, key, value) {
+  key = _toPropertyKey(key);
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
+  } else {
+    obj[key] = value;
+  }
+  return obj;
+}
+function _toPropertyKey(arg) {
+  var key = _toPrimitive(arg, 'string');
+  return typeof key === 'symbol' ? key : String(key);
+}
+function _toPrimitive(input, hint) {
+  if (typeof input !== 'object' || input === null) return input;
+  var prim = input[Symbol.toPrimitive];
+  if (prim !== undefined) {
+    var res = prim.call(input, hint || 'default');
+    if (typeof res !== 'object') return res;
+    throw new TypeError('@@toPrimitive must return a primitive value.');
+  }
+  return (hint === 'string' ? String : Number)(input);
+}
 /**
  * @param {Object}              [query={}]
  * @param {Object}              [options={}]
@@ -20,9 +84,8 @@
  *
  * @returns {Promise}
  */
-const PaginationParametersHelper = require('./pagination-parameters');
-
-const defaultOptions = {
+var PaginationParametersHelper = require('./pagination-parameters');
+var defaultOptions = {
   customLabels: {
     totalDocs: 'totalDocs',
     limit: 'limit',
@@ -49,64 +112,53 @@ const defaultOptions = {
   forceCountFn: false,
   allowDiskUse: false,
 };
-
 function paginate(query, options, callback) {
-  options = {
-    ...defaultOptions,
-    ...paginate.options,
-    ...options,
-  };
+  options = _objectSpread(
+    _objectSpread(_objectSpread({}, defaultOptions), paginate.options),
+    options
+  );
   query = query || {};
-
-  const {
-    collation,
-    lean,
-    leanWithId,
-    populate,
-    projection,
-    read,
-    select,
-    sort,
-    pagination,
-    useEstimatedCount,
-    useCustomCountFn,
-    forceCountFn,
-    allowDiskUse,
-  } = options;
-
-  const customLabels = {
-    ...defaultOptions.customLabels,
-    ...options.customLabels,
-  };
-
-  let limit = defaultOptions.limit;
-
+  var _options = options,
+    collation = _options.collation,
+    lean = _options.lean,
+    leanWithId = _options.leanWithId,
+    populate = _options.populate,
+    projection = _options.projection,
+    read = _options.read,
+    select = _options.select,
+    sort = _options.sort,
+    pagination = _options.pagination,
+    useEstimatedCount = _options.useEstimatedCount,
+    useCustomCountFn = _options.useCustomCountFn,
+    forceCountFn = _options.forceCountFn,
+    allowDiskUse = _options.allowDiskUse;
+  var customLabels = _objectSpread(
+    _objectSpread({}, defaultOptions.customLabels),
+    options.customLabels
+  );
+  var limit = defaultOptions.limit;
   if (pagination) {
     limit = parseInt(options.limit, 10) > 0 ? parseInt(options.limit, 10) : 0;
   }
-
-  const isCallbackSpecified = typeof callback === 'function';
-  const findOptions = options.options;
-
-  let offset;
-  let page;
-  let skip;
-
-  let docsPromise = [];
+  var isCallbackSpecified = typeof callback === 'function';
+  var findOptions = options.options;
+  var offset;
+  var page;
+  var skip;
+  var docsPromise = [];
 
   // Labels
-  const labelDocs = customLabels.docs;
-  const labelLimit = customLabels.limit;
-  const labelNextPage = customLabels.nextPage;
-  const labelPage = customLabels.page;
-  const labelPagingCounter = customLabels.pagingCounter;
-  const labelPrevPage = customLabels.prevPage;
-  const labelTotal = customLabels.totalDocs;
-  const labelTotalPages = customLabels.totalPages;
-  const labelHasPrevPage = customLabels.hasPrevPage;
-  const labelHasNextPage = customLabels.hasNextPage;
-  const labelMeta = customLabels.meta;
-
+  var labelDocs = customLabels.docs;
+  var labelLimit = customLabels.limit;
+  var labelNextPage = customLabels.nextPage;
+  var labelPage = customLabels.page;
+  var labelPagingCounter = customLabels.pagingCounter;
+  var labelPrevPage = customLabels.prevPage;
+  var labelTotal = customLabels.totalDocs;
+  var labelTotalPages = customLabels.totalPages;
+  var labelHasPrevPage = customLabels.hasPrevPage;
+  var labelHasNextPage = customLabels.hasNextPage;
+  var labelMeta = customLabels.meta;
   if (Object.prototype.hasOwnProperty.call(options, 'offset')) {
     offset = parseInt(options.offset, 10);
     skip = offset;
@@ -118,13 +170,10 @@ function paginate(query, options, callback) {
     page = 1;
     skip = offset;
   }
-
   if (!pagination) {
     page = 1;
   }
-
-  let countPromise;
-
+  var countPromise;
   if (pagination) {
     if (forceCountFn === true) {
       // Deprecated since starting from MongoDB Node.JS driver v3.1
@@ -150,18 +199,14 @@ function paginate(query, options, callback) {
       }
     }
   }
-
   if (limit) {
-    const mQuery = this.find(query, projection, findOptions);
-
+    var mQuery = this.find(query, projection, findOptions);
     if (populate) {
       mQuery.populate(populate);
     }
-
     mQuery.select(select);
     mQuery.sort(sort);
     mQuery.lean(lean);
-
     if (read && read.pref) {
       /**
        * Determines the MongoDB nodes from which to read.
@@ -175,12 +220,10 @@ function paginate(query, options, callback) {
     if (Object.keys(collation).length > 0) {
       mQuery.collation(collation);
     }
-
     if (pagination) {
       mQuery.skip(skip);
       mQuery.limit(limit);
     }
-
     try {
       if (allowDiskUse === true) {
         mQuery.allowDiskUse();
@@ -188,12 +231,10 @@ function paginate(query, options, callback) {
     } catch (ex) {
       console.error('Your MongoDB version does not support `allowDiskUse`.');
     }
-
     docsPromise = mQuery.exec();
-
     if (lean && leanWithId) {
-      docsPromise = docsPromise.then((docs) => {
-        docs.forEach((doc) => {
+      docsPromise = docsPromise.then(function (docs) {
+        docs.forEach(function (doc) {
           if (doc._id) {
             doc.id = String(doc._id);
           }
@@ -202,40 +243,32 @@ function paginate(query, options, callback) {
       });
     }
   }
-
   return Promise.all([countPromise, docsPromise])
-    .then((values) => {
-      let count = values[0];
-      const docs = values[1];
-
+    .then(function (values) {
+      var count = values[0];
+      var docs = values[1];
       if (pagination !== true) {
         count = docs.length;
       }
-
-      const meta = {
+      var meta = {
         [labelTotal]: count,
       };
-
-      let result = {};
-
+      var result = {};
       if (typeof offset !== 'undefined') {
         meta.offset = offset;
         page = Math.ceil((offset + 1) / limit);
       }
-
-      const pages = limit > 0 ? Math.ceil(count / limit) || 1 : null;
+      var pages = limit > 0 ? Math.ceil(count / limit) || 1 : null;
 
       // Setting default values
       meta[labelLimit] = count;
       meta[labelTotalPages] = 1;
       meta[labelPage] = page;
       meta[labelPagingCounter] = (page - 1) * limit + 1;
-
       meta[labelHasPrevPage] = false;
       meta[labelHasNextPage] = false;
       meta[labelPrevPage] = null;
       meta[labelNextPage] = null;
-
       if (pagination) {
         meta[labelLimit] = limit;
         meta[labelTotalPages] = pages;
@@ -258,7 +291,6 @@ function paginate(query, options, callback) {
 
       // Remove customLabels set to false
       delete meta['false'];
-
       if (limit == 0) {
         meta[labelLimit] = 0;
         meta[labelTotalPages] = 1;
@@ -269,24 +301,24 @@ function paginate(query, options, callback) {
         meta[labelHasPrevPage] = false;
         meta[labelHasNextPage] = false;
       }
-
       if (labelMeta) {
         result = {
           [labelDocs]: docs,
           [labelMeta]: meta,
         };
       } else {
-        result = {
-          [labelDocs]: docs,
-          ...meta,
-        };
+        result = _objectSpread(
+          {
+            [labelDocs]: docs,
+          },
+          meta
+        );
       }
-
       return isCallbackSpecified
         ? callback(null, result)
         : Promise.resolve(result);
     })
-    .catch((error) => {
+    .catch(function (error) {
       return isCallbackSpecified ? callback(error) : Promise.reject(error);
     });
 }
@@ -294,9 +326,8 @@ function paginate(query, options, callback) {
 /**
  * @param {Schema} schema
  */
-module.exports = (schema) => {
+module.exports = function (schema) {
   schema.statics.paginate = paginate;
 };
-
 module.exports.PaginationParameters = PaginationParametersHelper;
 module.exports.paginate = paginate;
